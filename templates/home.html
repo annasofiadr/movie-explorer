@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>Movie Explorer</title>
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="{{ url_for('home') }}">Movie Explorer</a>
+
+    <div class="nav-links">
+        {% if session.get("user_id") %}
+            <span>Hello, {{ session["username"] }}</span>
+
+            <a href="{{ url_for('favorites') }}">
+                Favorites
+            </a>
+
+            <form
+                action="{{ url_for('logout') }}"
+                method="POST"
+                class="inline-form"
+            >
+                <button type="submit" class="link-button">
+                    Logout
+                </button>
+            </form>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+    </div>
+</nav>
+
+<main class="container">
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <p class="flash-message">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="hero">
+        <h1>Find your next movie</h1>
+
+        <form
+            action="{{ url_for('search') }}"
+            method="POST"
+            class="search-form"
+        >
+            <input
+                type="text"
+                name="query"
+                value="{{ query or '' }}"
+                placeholder="Search for a movie..."
+                required
+            >
+
+            <button type="submit">Search</button>
+        </form>
+    </section>
+
+    {% if movies is not none %}
+        <section>
+            <h2>Results</h2>
+
+            {% if movies %}
+                <div class="movie-grid">
+
+                    {% for movie in movies %}
+                        <a
+                            href="{{ url_for(
+                                'movie_detail',
+                                movie_id=movie['id']
+                            ) }}"
+                            class="movie-card"
+                        >
+                            {% if movie.get("poster_path") %}
+                                <img
+                                    src="https://image.tmdb.org/t/p/w300{{ movie['poster_path'] }}"
+                                    alt="{{ movie['title'] }}"
+                                >
+                            {% else %}
+                                <div class="poster-placeholder">
+                                    No poster
+                                </div>
+                            {% endif %}
+
+                            <div class="movie-card-content">
+                                <h3>{{ movie["title"] }}</h3>
+
+                                <p>
+                                    Rating:
+                                    {{ movie.get("vote_average", "N/A") }}
+                                </p>
+                            </div>
+                        </a>
+                    {% endfor %}
+
+                </div>
+            {% else %}
+                <p>No movies were found.</p>
+            {% endif %}
+        </section>
+    {% endif %}
+
+</main>
+
+</body>
+</html>
